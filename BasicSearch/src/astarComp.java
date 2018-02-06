@@ -6,8 +6,10 @@ public class astarComp  implements Comparator<Node>{
 	public int compare(Node a, Node b) {
 		int af=a.h+a.g;
 		int bf=b.h+b.g;
+		
 		if(af==bf) {
 			if(a.priority<b.priority) {
+			
 				return -1;
 			}
 			if (a.priority>b.priority) {

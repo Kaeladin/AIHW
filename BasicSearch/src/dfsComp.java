@@ -4,7 +4,7 @@ public class dfsComp implements Comparator<Node> {
 
 	@Override
 	public int compare(Node a, Node b) {
-		if(a.g==b.g) {
+		if(a.depth==b.depth) {
 			if(a.priority<b.priority) {
 				return -1;
 			}
@@ -15,9 +15,9 @@ public class dfsComp implements Comparator<Node> {
 				return 0;
 			}
 		}
-		if(a.g>b.g)
+		if(a.depth>b.depth)
 			return -1;
-		if(a.g<b.g)
+		if(a.depth<b.depth)
 			return 1;
 		return 0;
 	}

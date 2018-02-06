@@ -4,16 +4,20 @@ public class Node implements Comparable<Node>{
 	public String state;
 	public List<Node> children; 
 	public Node parent;
+	public int depth;
 	public int g;
 	public int h;
 	public int move;
 	public int priority;
+	public int cost;
 	
 	public Node(String st) {
 		state = st;
 		move=-1;
 		g=0;
+		depth=0;
 		priority=0;
+		cost=0;
 		h=tilePlacementCost(state);
 	}
 	
@@ -30,15 +34,18 @@ public class Node implements Comparable<Node>{
 				if(i==numB && stateChars[i]!='x')
 					errors++;
 		}
-	
 		return errors;
 	}
 
 	public String toString() {
-		if(move>=0) {
-			return "Move "+move+" "+state+" "+priority;
+		String cstring="";
+		if(cost!=0) {
+			cstring = "(c="+cost+")";
 		}
-		else return state+priority;
+		if(move>=0) {
+			return "Move "+move+" "+state+" "+cstring;
+		}
+		else return state+cstring;
 	}
 
 	@Override

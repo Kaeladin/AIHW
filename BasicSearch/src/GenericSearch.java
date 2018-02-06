@@ -4,9 +4,7 @@ import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 import java.util.PriorityQueue;
-import java.util.Queue;
 import java.util.Scanner;
-import java.util.Stack;
 
 public class GenericSearch {
 
@@ -14,18 +12,28 @@ public class GenericSearch {
 	private static Scanner fileScan;
 	public static void main(String[] args) throws FileNotFoundException {
 		
-
-		readFile();
-		String strategy= "DFS";
-		
-		search(state,strategy);
-		
+		String filePath;
+		boolean cost;
+		String strategy;
+		if(args[0].contains("-cost"))
+			cost = true;
+		else
+			cost = false;
+		if(cost) {
+			strategy =args[1];
+			filePath = args[2];
+		}
+		else {
+			strategy = args[0];
+			filePath = args[1];
+		}
+		readFile(filePath);
+		search(state,strategy ,cost);	
 	}
 
-	private static void search( String state, String strategy) {
+	private static void search( String state, String strategy, boolean cost) {
 		int priority = 0;
-			
-		
+				
 		Comparator<Node> comp = null;
 		switch (strategy) {
 		case "BFS":	
@@ -44,10 +52,7 @@ public class GenericSearch {
 			comp = new astarComp();
 			break;
 		}
-		PriorityQueue<Node> fringe = new PriorityQueue<>(50,comp);
-		
-		
-		
+		PriorityQueue<Node> fringe = new PriorityQueue<>(50,comp);	
 		ArrayList<String> visited= new ArrayList<String>();
 		
 		Node root = new Node(state);
@@ -66,7 +71,7 @@ public class GenericSearch {
 			else if(!visited.contains(n.state)){			
 				System.out.println(n.toString());
 
-				List<Node> s = successors(n);
+				List<Node> s = successors(n,cost);
 				visited.add(n.state);
 				for(Node succ : s) {
 					if(!visited.contains(succ.state)) {
@@ -79,8 +84,8 @@ public class GenericSearch {
 		}//while there are unexpanded nodes
 	}//search algorithm
 
-	private static void readFile() throws FileNotFoundException {
-		File testFile = new File("./src/tile1.txt");
+	private static void readFile(String fileName) throws FileNotFoundException {
+		File testFile = new File(fileName);
 		fileScan = new Scanner(testFile);
 		state = fileScan.next();
 	}
@@ -88,17 +93,16 @@ public class GenericSearch {
 	public static String path(Node n, String strategy) {
 		String path="";
 		if(n.parent!=null) {
-			path=path.concat(path(n.parent, strategy)+"Step "+n.g+": "+n.toString()+"\n");
+			path=path.concat(path(n.parent, strategy)+"Step "+n.depth+": "+n.toString()+"\n");
 		}
 		
 		else {
 			return "\nFinal Result for "+strategy+":\nStep 0: "+n.toString()+'\n';
 		}
 		return path;
-	}
+	}	
 	
-	
-	public static List<Node> successors(Node n){
+	public static List<Node> successors(Node n, boolean cost){
 		List<Node> succs = new ArrayList<Node>();
 		String st=n.state;
 		int blankIndex = 0;
@@ -113,7 +117,17 @@ public class GenericSearch {
 					Node m = new Node(move(i,st));
 					m.move=i;
 					m.parent=n;
+				
+					m.depth=n.depth+1;
+					if(!cost) {
 					m.g=n.g+1;
+					
+					}
+					
+					else {
+						m.cost=moveCost(st,i);
+						m.g=n.g+m.cost;
+					}
 					succs.add(m);	
 			}
 		}
@@ -121,6 +135,7 @@ public class GenericSearch {
 		return succs;
 	}
 	
+
 	public static boolean isGoal(Node n)
 	{		
 		boolean expectWhite = false;
@@ -149,6 +164,11 @@ public class GenericSearch {
 		stateChars[blankIndex]=stateChars[x];
 		stateChars[x]='x';
 		return new String(stateChars);
+	}
+	
+
+	private static int moveCost(String st, int i) {
+		return Math.abs(st.indexOf("x")-i);
 	}
 
 	
