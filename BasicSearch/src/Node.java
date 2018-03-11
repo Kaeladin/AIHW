@@ -31,7 +31,7 @@ public class Node implements Comparable<Node>{
 					errors++;
 				if(i>numB && stateChars[i]!='W')
 					errors++;
-				if(i==numB && stateChars[i]!='x')
+				if(i==numB && stateChars[i]!='X')
 					errors++;
 		}
 		return errors;

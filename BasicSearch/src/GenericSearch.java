@@ -87,7 +87,7 @@ public class GenericSearch {
 	private static void readFile(String fileName) throws FileNotFoundException {
 		File testFile = new File(fileName);
 		fileScan = new Scanner(testFile);
-		state = fileScan.next();
+		state = fileScan.next().toUpperCase();
 	}
 	
 	public static String path(Node n, String strategy) {
@@ -108,7 +108,7 @@ public class GenericSearch {
 		int blankIndex = 0;
 		char[] stateChars = st.toCharArray();
 		for(int i=0; i<stateChars.length; i++) {
-			if(stateChars[i]=='x') {
+			if(stateChars[i]=='X') {
 				blankIndex=i;
 			}
 		}
@@ -145,7 +145,7 @@ public class GenericSearch {
 				return false;
 			if(!expectWhite && stateChars[i]=='W')
 				return false;
-			if(stateChars[i]=='x')
+			if(stateChars[i]=='X')
 				expectWhite=true;
 		}		
 		return true;
@@ -156,13 +156,13 @@ public class GenericSearch {
 		
 		char[] stateChars = state.toCharArray();
 		for(int i=0; i<stateChars.length; i++) {
-			if(stateChars[i]=='x') {
+			if(stateChars[i]=='X') {
 				blankIndex=i;
 			}
 		}
 		
 		stateChars[blankIndex]=stateChars[x];
-		stateChars[x]='x';
+		stateChars[x]='X';
 		return new String(stateChars);
 	}
 	
