@@ -3,6 +3,8 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.util.*;
 
+import org.omg.CORBA.Current;
+
 
 public class Main {
 
@@ -10,6 +12,8 @@ public class Main {
 	static ArrayList<Variable> varList = new ArrayList<Variable>();
 
 	public static void main(String[] args) throws FileNotFoundException{
+		
+		boolean forwardChecking=false;
 
 		File varFile = new File("./src/ex1.var1.txt");
 		File conFile = new File("./src/ex1.con.txt");
@@ -20,6 +24,8 @@ public class Main {
 		initConsts(conScan);
 
 		State currState = new State(varList);
+		backtrackingSearch(currState,forwardChecking);
+		/*
 		fringe.add(currState);
 		//end of file read-in
 
@@ -46,16 +52,19 @@ public class Main {
 
 			chosen.value = value;
 			chosen.valueSet = true;
+			currState.numSet++;
 
 			//UPDATE LEGAL VALUES 
-			updateLegal(chosen, value);
+			if(forwardChecking) {
+				updateLegal(chosen, value);
+			}
 
 			State nextState = new State(varList);
 			nextState.count = currState.count + 1;
 			fringe.add(nextState);
 
 			if(!checkConstraints()){
-				System.out.println("fail");
+				System.out.println("failure");
 				break;
 			}
 			//add new state to fringe with updated variables (legal values)
@@ -64,9 +73,47 @@ public class Main {
 
 
 			//end while
-		}	
+		}	*/
 		varScan.close();
 		conScan.close();
+	}
+	
+	private static State backtrackingSearch(State currState, boolean forwardChecking) {
+		State solution;
+		solution=recBackTracking(currState, forwardChecking);
+		
+		return solution;
+		
+	}
+
+	private static State recBackTracking(State currState, boolean forwardChecking) {
+		Variable chosen = chooseVariable(currState);
+		if(chosen == null){
+			System.out.println("failure");
+			return null;
+		}
+		System.out.print(chosen.name+ " ");
+
+		int value = chooseValue(chosen, currState);
+		System.out.println(value);
+		chosen.value = value;
+		chosen.valueSet = true;
+		currState.numSet++;
+
+		//UPDATE LEGAL VALUES 
+		if(forwardChecking) {
+			updateLegal(chosen, value);
+		}
+		State nextState = new State(varList);
+		nextState.count = currState.count + 1;
+
+		
+		if(!checkConstraints()){
+			System.out.println("failure");
+			return null;
+		}
+		
+		return recBackTracking(nextState,forwardChecking);
 	}
 
 	private static void initConsts(Scanner conScan) {
@@ -370,7 +417,36 @@ public class Main {
 		return var.constraints.size();
 		 
 	}
-	public static Variable chooseVariable(State current){
+	
+	
+	public static Variable chooseVariable(State current) {
+		if(current.numSet==current.variableList.size()) {
+			System.out.println("All set.");
+			return null;
+		}
+		Variable mostConstrained=null;
+		
+		for (Variable var: current.variableList) {
+			if(!var.valueSet) {
+				//System.out.println(var);
+				if(mostConstrained==null) {
+					mostConstrained=var;
+					System.out.println("1st: "+mostConstrained);
+
+
+				}
+				if (var.compareTo(mostConstrained)==-1) {
+				mostConstrained=var;
+				System.out.println("1st: "+mostConstrained);
+				}
+			
+			}
+		}
+		return mostConstrained;
+	}
+	
+	/*
+	public static Variable chooseVariable2(State current){
 		
 		//State current = fringe.peek();
 		//check all variables to see which has fewest legal values
@@ -384,7 +460,7 @@ public class Main {
 
 			else if(mostConstrained == -1 || current.variableList.get(i).legalValues.size() < current.variableList.get(mostConstrained).legalValues.size()){
 				mostConstrained = i;
-				System.out.println("1st: "+mostConstrained+current.variableList.get(mostConstrained));
+				System.out.println("1st: "+current.variableList.get(mostConstrained));
 
 			}
 			if(current.variableList.get(i).valueSet != true && current.variableList.get(i).legalValues.size() == current.variableList.get(mostConstrained).legalValues.size()){
@@ -400,7 +476,7 @@ public class Main {
 		}
 		return current.variableList.get(mostConstrained);
 	}
-	
+	*/
 	
 
 }
