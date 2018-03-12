@@ -9,7 +9,7 @@ import org.omg.CORBA.Current;
 public class Main {
 
 	static Stack<State> fringe = new Stack<State>();
-	static ArrayList<Variable> varList = new ArrayList<Variable>();
+	//static ArrayList<Variable> varList = new ArrayList<Variable>();
 
 	public static void main(String[] args) throws FileNotFoundException{
 		
@@ -20,60 +20,12 @@ public class Main {
 
 		Scanner varScan = new Scanner(varFile);
 		Scanner conScan = new Scanner(conFile);
-		initVars(varScan);
-		initConsts(conScan);
+		ArrayList<Variable> varList = initVars(varScan);
+		initConsts(conScan,varList);
 
 		State currState = new State(varList);
 		backtrackingSearch(currState,forwardChecking);
-		/*
-		fringe.add(currState);
-		//end of file read-in
-
-
-		//while...
-		int count =0;
-		while(!fringe.empty() && currState.count < varList.size()-1){
-			currState = fringe.pop();
-			//System.out.println(currState);
-
-			//choose variable
-			//most constrained variable heuristic (ties broken alphabetically)
-			Variable chosen = chooseVariable(currState);
-			if(chosen == null){
-				System.out.println("failure");
-				break;
-			}
-			System.out.print(chosen.name+ " ");
-
-			//choose value
-			//least constraining (ties broken with smaller val)
-			int value = chooseValue(chosen, currState);
-			System.out.println(value);
-
-			chosen.value = value;
-			chosen.valueSet = true;
-			currState.numSet++;
-
-			//UPDATE LEGAL VALUES 
-			if(forwardChecking) {
-				updateLegal(chosen, value);
-			}
-
-			State nextState = new State(varList);
-			nextState.count = currState.count + 1;
-			fringe.add(nextState);
-
-			if(!checkConstraints()){
-				System.out.println("failure");
-				break;
-			}
-			//add new state to fringe with updated variables (legal values)
-			//add other new states with "non-optimal" values?
-
-
-
-			//end while
-		}	*/
+	
 		varScan.close();
 		conScan.close();
 	}
@@ -87,7 +39,14 @@ public class Main {
 	}
 
 	private static State recBackTracking(State currState, boolean forwardChecking) {
+		
+		State result;
+		if(currState.numSet==currState.variableList.size()) {
+			return currState;
+		}
+		
 		Variable chosen = chooseVariable(currState);
+		
 		if(chosen == null){
 			System.out.println("failure");
 			return null;
@@ -98,25 +57,30 @@ public class Main {
 		System.out.println(value);
 		chosen.value = value;
 		chosen.valueSet = true;
+		currState.set(chosen);
 		currState.numSet++;
-
-		//UPDATE LEGAL VALUES 
-		if(forwardChecking) {
-			updateLegal(chosen, value);
-		}
-		State nextState = new State(varList);
-		nextState.count = currState.count + 1;
-
+		result=recBackTracking(currState, forwardChecking);
 		
-		if(!checkConstraints()){
+		if(result!=null)
+			return result;
+		if(!checkConstraints(currState)){
 			System.out.println("failure");
 			return null;
 		}
+		//UPDATE LEGAL VALUES 
+		if(forwardChecking) {
+			updateLegal(chosen, value, currState);
+		}
+		//State nextState = new State(currState);
+	//	nextState.count = currState.count + 1;
+
 		
-		return recBackTracking(nextState,forwardChecking);
+		
+		
+		return null;
 	}
 
-	private static void initConsts(Scanner conScan) {
+	private static void initConsts(Scanner conScan, ArrayList<Variable> varList ) {
 		while(conScan.hasNextLine()){
 			String constraint = conScan.nextLine();
 			String[] parts = constraint.split(" ");
@@ -132,7 +96,9 @@ public class Main {
 		}
 	}
 
-	private static void initVars(Scanner varScan) {
+	private static ArrayList<Variable> initVars(Scanner varScan) {
+		
+		ArrayList<Variable> varList= new ArrayList<>();
 		while(varScan.hasNextLine()){
 			String varName = varScan.next();
 			varName = varName.substring(0, varName.length() - 1);
@@ -149,9 +115,11 @@ public class Main {
 			varList.add(tempVar);
 
 		}
+		return varList;
 	}
 	
-	public static boolean checkConstraints(){
+	public static boolean checkConstraints(State state){
+		ArrayList<Variable> varList = state.variableList;
 		boolean legal = false;
 		for(int i=0; i<varList.size(); i++){
 			for (int j=0; j<varList.get(i).legalValues.size(); j++){
@@ -168,7 +136,9 @@ public class Main {
 		return legal;
 	}
 
- 	public static void updateLegal(Variable var, int val){
+ 	public static void updateLegal(Variable var, int val, State state){
+ 		
+ 		ArrayList<Variable> varList=state.variableList;
 		String constraint;
 		String [] constrArr;
 
@@ -289,7 +259,7 @@ public class Main {
 
 		for(int i=0; i<var.legalValues.size(); i++){
 			//System.out.println(var.legalValues.get(i));
-			min = numConstraining(var, var.legalValues.get(i));
+			min = numConstraining(var, var.legalValues.get(i),curr);
 			if(min < val){
 				index = i;
 				val = min;
@@ -300,7 +270,9 @@ public class Main {
 		return var.legalValues.get(index);
 	}
 
-	public static int numConstraining(Variable var, int val){
+	public static int numConstraining(Variable var, int val, State state){
+		
+		ArrayList<Variable> varList= state.variableList;
 		String constraint;
 		String [] constrArr;
 		int illegalCt =0;

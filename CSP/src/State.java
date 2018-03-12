@@ -19,4 +19,16 @@ public class State {
 		return out;
 		
 	}
+	
+	public void set(Variable updated) {
+		for(int i=0; i<this.variableList.size(); i++) {
+			Variable var=this.variableList.get(i);
+			if(!var.valueSet && var.name.equals(updated.name)) {
+				var.value=updated.value;
+				var.valueSet=true;
+				
+			}
+			
+		}
+	}
 }
