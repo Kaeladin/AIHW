@@ -33,44 +33,87 @@ public class Main {
 	private static State backtrackingSearch(State currState, boolean forwardChecking) {
 		State solution;
 		solution=recBackTracking(currState, forwardChecking);
-		
 		return solution;
 		
 	}
 
 	private static State recBackTracking(State currState, boolean forwardChecking) {
 		
-		State result;
+		//System.out.println(currState.count);
+		State result = null;
 		if(currState.numSet==currState.variableList.size()) {
+			System.out.println("Fully assigned");
 			return currState;
 		}
+		
+		
 		
 		Variable chosen = chooseVariable(currState);
 		
 		if(chosen == null){
-			System.out.println("failure");
+			System.out.println("no remaining variable failure");
 			return null;
 		}
-		System.out.print(chosen.name+ " ");
-
-		int value = chooseValue(chosen, currState);
-		System.out.println(value);
-		chosen.value = value;
-		chosen.valueSet = true;
-		currState.set(chosen);
-		currState.numSet++;
-		result=recBackTracking(currState, forwardChecking);
 		
-		if(result!=null)
+		//System.out.println(chosen);
+		while(chosen.legalValues.size()>0) {
+			int value=chooseValue(chosen,currState);
+			chosen.value=value;
+			State nextState= new State(currState);
+			//System.out.println("before: "+nextState);
+			nextState.set(chosen);
+		//	System.out.println("after: "+nextState);
+			nextState.numSet++;
+			if(!checkConstraints(currState)) {
+				//System.out.println(currState);
+				System.out.println("constraints failure");
+				return null;
+			}
+			
+			result=recBackTracking(nextState,forwardChecking);
+			if(result!=null) {
+				//System.out.println(result);
+				return result;
+			}
+			chosen.legalValues.remove(chosen.legalValues.indexOf(value));
+			currState.set(chosen);
+			
+			
+		}
+		return null;
+		
+		/*
+		
+		while(chosen.legalValues.size()>0) {
+			//System.out.println(i);
+			int value = chooseValue(chosen, currState);
+			//System.out.println(chosen.name+"="+value);
+			chosen.value = value;
+			chosen.valueSet = true;
+			currState.set(chosen);
+			if(!checkConstraints(currState)) {
+			//	System.out.println("constraints failure");
+				System.out.println(currState);
+				return null;
+			}
+			currState.numSet++;
+			State nextState=new State(currState);
+			nextState.count++;
+			result=recBackTracking(nextState, forwardChecking);
+			chosen.legalValues.remove(chosen.legalValues.indexOf(value));
+			if(forwardChecking) {
+				currState=updateLegal(chosen, value, currState);
+			}
+			
+		}
+		if(result!=null) {
+			System.out.println(result);
 			return result;
-		if(!checkConstraints(currState)){
-			System.out.println("failure");
-			return null;
 		}
+	
+		
 		//UPDATE LEGAL VALUES 
-		if(forwardChecking) {
-			updateLegal(chosen, value, currState);
-		}
+		
 		//State nextState = new State(currState);
 	//	nextState.count = currState.count + 1;
 
@@ -78,7 +121,10 @@ public class Main {
 		
 		
 		return null;
+		*/
 	}
+
+		
 
 	private static void initConsts(Scanner conScan, ArrayList<Variable> varList ) {
 		while(conScan.hasNextLine()){
@@ -136,7 +182,7 @@ public class Main {
 		return legal;
 	}
 
- 	public static void updateLegal(Variable var, int val, State state){
+ 	public static State updateLegal(Variable var, int val, State state){
  		
  		ArrayList<Variable> varList=state.variableList;
 		String constraint;
@@ -247,7 +293,8 @@ public class Main {
 			}
 		}
 
-
+		state.variableList=varList;
+		return state;
 
 	}
 
@@ -260,6 +307,7 @@ public class Main {
 		for(int i=0; i<var.legalValues.size(); i++){
 			//System.out.println(var.legalValues.get(i));
 			min = numConstraining(var, var.legalValues.get(i),curr);
+			//System.out.println(var.legalValues.get(i)+": "+min);
 			if(min < val){
 				index = i;
 				val = min;
@@ -402,18 +450,20 @@ public class Main {
 			if(!var.valueSet) {
 				//System.out.println(var);
 				if(mostConstrained==null) {
+					//break;
 					mostConstrained=var;
-					System.out.println("1st: "+mostConstrained);
+					//System.out.println(mostConstrained);
 
 
 				}
 				if (var.compareTo(mostConstrained)==-1) {
 				mostConstrained=var;
-				System.out.println("1st: "+mostConstrained);
+				//System.out.println(mostConstrained);
 				}
 			
 			}
 		}
+	
 		return mostConstrained;
 	}
 	

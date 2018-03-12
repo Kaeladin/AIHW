@@ -11,6 +11,12 @@ public class State {
 		this.numSet=0;
 	}
 	
+
+	public State(State master){
+		this.variableList = master.variableList;
+		this.numSet=master.numSet;
+		this.count=master.count;
+	}
 	public String toString() {
 		String out="";
 		for (Variable var : variableList) {
@@ -21,14 +27,12 @@ public class State {
 	}
 	
 	public void set(Variable updated) {
-		for(int i=0; i<this.variableList.size(); i++) {
-			Variable var=this.variableList.get(i);
-			if(!var.valueSet && var.name.equals(updated.name)) {
-				var.value=updated.value;
-				var.valueSet=true;
-				
-			}
-			
+		updated.valueSet=true;
+		for(int i=0;i<this.variableList.size(); i++) {
+			if(this.variableList.get(i).name.equals(updated.name))
+				this.variableList.set(i, updated);
 		}
+			
+		
 	}
 }
