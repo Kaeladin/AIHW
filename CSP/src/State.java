@@ -7,4 +7,13 @@ public class State {
 	public State(ArrayList<Variable> variableArray){
 		this.variableList = variableArray;
 	}
+	
+	public String toString() {
+		String out="";
+		for (Variable var : variableList) {
+			out=out+var.toString()+'\n';
+		}
+		return out;
+		
+	}
 }

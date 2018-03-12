@@ -16,37 +16,8 @@ public class Main {
 
 		Scanner varScan = new Scanner(varFile);
 		Scanner conScan = new Scanner(conFile);
-
-		while(varScan.hasNextLine()){
-			String varName = varScan.next();
-			varName = varName.substring(0, varName.length() - 1);
-			String line = varScan.nextLine();
-			//System.out.println(line);
-			char[] input = line.toCharArray();
-			Variable tempVar = new Variable();
-			tempVar.name = varName;
-			for(int i=1; i<input.length; i+=2){
-				tempVar.possibleValues.add(Integer.parseInt(Character.toString(input[i])));
-			}
-			tempVar.legalValues = tempVar.possibleValues;
-			tempVar.valueSet = false;
-			varList.add(tempVar);
-
-		}
-
-		while(conScan.hasNextLine()){
-			String constraint = conScan.nextLine();
-			String[] parts = constraint.split(" ");
-
-			for(int i=0; i<varList.size(); i++){
-				//System.out.println(varList.get(i).name);
-				if (parts[0].contains(varList.get(i).name) || parts[2].contains(varList.get(i).name)){
-					//System.out.println("hi");
-					varList.get(i).constraints.add(constraint);
-				}
-
-			}
-		}
+		initVars(varScan);
+		initConsts(conScan);
 
 		State currState = new State(varList);
 		fringe.add(currState);
@@ -57,6 +28,8 @@ public class Main {
 		int count =0;
 		while(!fringe.empty() && currState.count < varList.size()-1){
 			currState = fringe.pop();
+			//System.out.println(currState);
+
 			//choose variable
 			//most constrained variable heuristic (ties broken alphabetically)
 			Variable chosen = chooseVariable(currState);
@@ -94,6 +67,41 @@ public class Main {
 		}	
 		varScan.close();
 		conScan.close();
+	}
+
+	private static void initConsts(Scanner conScan) {
+		while(conScan.hasNextLine()){
+			String constraint = conScan.nextLine();
+			String[] parts = constraint.split(" ");
+
+			for(int i=0; i<varList.size(); i++){
+				//System.out.println(varList.get(i).name);
+				if (parts[0].contains(varList.get(i).name) || parts[2].contains(varList.get(i).name)){
+					//System.out.println("hi");
+					varList.get(i).constraints.add(constraint);
+				}
+
+			}
+		}
+	}
+
+	private static void initVars(Scanner varScan) {
+		while(varScan.hasNextLine()){
+			String varName = varScan.next();
+			varName = varName.substring(0, varName.length() - 1);
+			String line = varScan.nextLine();
+			//System.out.println(line);
+			char[] input = line.toCharArray();
+			Variable tempVar = new Variable();
+			tempVar.name = varName;
+			for(int i=1; i<input.length; i+=2){
+				tempVar.possibleValues.add(Integer.parseInt(Character.toString(input[i])));
+			}
+			tempVar.legalValues = tempVar.possibleValues;
+			tempVar.valueSet = false;
+			varList.add(tempVar);
+
+		}
 	}
 	
 	public static boolean checkConstraints(){
@@ -358,11 +366,17 @@ public class Main {
 		return illegalCt;
 	}
 
+	public static int howConstrained(Variable var) {
+		return var.constraints.size();
+		 
+	}
 	public static Variable chooseVariable(State current){
+		
 		//State current = fringe.peek();
 		//check all variables to see which has fewest legal values
 		int mostConstrained = -1;
 		for(int i=0; i< current.variableList.size(); i++){
+			
 			if(current.variableList.get(i).valueSet == true){
 				if(mostConstrained == -1 && i == current.variableList.size()-1)
 					return null;
@@ -370,19 +384,23 @@ public class Main {
 
 			else if(mostConstrained == -1 || current.variableList.get(i).legalValues.size() < current.variableList.get(mostConstrained).legalValues.size()){
 				mostConstrained = i;
+				System.out.println("1st: "+mostConstrained+current.variableList.get(mostConstrained));
 
 			}
 			if(current.variableList.get(i).valueSet != true && current.variableList.get(i).legalValues.size() == current.variableList.get(mostConstrained).legalValues.size()){
 				//System.out.println(current.variableList.get(i).name);
 				if(current.variableList.get(mostConstrained).valueSet == true || current.variableList.get(i).name.compareTo(current.variableList.get(mostConstrained).name) < 0 ){
 					mostConstrained = i;
+					System.out.println("2nd: "+mostConstrained+current.variableList.get(mostConstrained).legalValues.size());
 
 				}
 
 			}
-
+			
 		}
 		return current.variableList.get(mostConstrained);
 	}
+	
+	
 
 }
