@@ -1,11 +1,12 @@
 package src;
 import java.util.ArrayList;
 
-public class Variable implements Comparable{
+public class Variable implements Comparable <Variable>{
 	String name;
 	ArrayList<String> constraints = new ArrayList<String>();
 	ArrayList<Integer> possibleValues = new ArrayList<Integer>();
 	ArrayList<Integer> legalValues = new ArrayList<Integer>();
+	int numConstraining;
 	int value;
 	boolean valueSet;
 
@@ -19,21 +20,24 @@ public class Variable implements Comparable{
 		return descript;
 	}
 	
-	public int compare(Variable var) {
+	@Override
+	public int compareTo(Variable var) {
 		if(this.possibleValues.size()<var.possibleValues.size()) {
 			return -1;
 		}
 		
 		else if(this.possibleValues.size()>var.possibleValues.size()) {
+
 			return 1;
+
 		}
 		
 		else {
-			if(this.constraints.size()>var.constraints.size()) {
+			if(this.numConstraining>var.numConstraining) {
 				return -1;
 			}
 			
-			else if(this.constraints.size()<var.constraints.size()) {
+			else if(this.numConstraining<var.numConstraining) {
 				return 1;
 			}
 			
@@ -45,11 +49,7 @@ public class Variable implements Comparable{
 		
 	}
 
-	@Override
-	public int compareTo(Object var) {
-		return this.compare((Variable) var);
-
-	}
+	
 	
 
 }

@@ -15,8 +15,8 @@ public class Main {
 		
 		boolean forwardChecking=false;
 
-		File varFile = new File("./src/ex1.var1.txt");
-		File conFile = new File("./src/ex1.con.txt");
+		File varFile = new File("./src/ex3.var1.txt");
+		File conFile = new File("./src/ex3.con.txt");
 
 		Scanner varScan = new Scanner(varFile);
 		Scanner conScan = new Scanner(conFile);
@@ -65,10 +65,10 @@ public class Main {
 			//System.out.println(chosen.name+ "="+value);
 			chosen.value = value;
 			chosen.valueSet = true;
-			State nextState = new State(currState);
-			nextState.set(chosen);
-			nextState.numSet++;
-			result=recBackTracking(nextState, forwardChecking);
+			//State nextState = new State(currState);
+			currState.set(chosen);
+			currState.numSet++;
+			result=recBackTracking(currState, forwardChecking);
 			if(forwardChecking) {
 				updateLegal(chosen, value, currState);
 			}
@@ -76,11 +76,12 @@ public class Main {
 			if(result==null) {
 				//System.out.println(chosen.name+"="+value+" is not legal assignment.");
 				branchnum++;
-				System.out.print(branchnum+". "+nextState.assignment);
+				System.out.print(branchnum+". "+currState.assignment);
+	
 				chosen.legalValues.remove(chosen.legalValues.indexOf(value));
 				chosen.valueSet=false;
-				nextState.unSet(chosen);
-				nextState.numSet--;
+				currState.unSet(chosen);
+				currState.numSet--;
 				System.out.println("  failure");
 
 			}
@@ -367,8 +368,8 @@ public class Main {
 		int min;
 
 
-		for(int i=0; i<var.legalValues.size(); i++){
-			min = numConstraining(var, var.legalValues.get(i),curr);
+		for(int i=0; i<var.possibleValues.size(); i++){
+			min = numConstraining(var, var.possibleValues.get(i),curr);
 			if(min < val){
 				index = i;
 				val = min;
@@ -382,8 +383,6 @@ public class Main {
 	public static int numConstraining(Variable var, int val, State state){
 		
 		boolean legal;
-		ArrayList<Variable> varList= state.variableList;
-		String constraint;
 		String [] cArr;
 		int illegalCt =0;
 				for(String constr : var.constraints) {
@@ -522,6 +521,9 @@ public class Main {
 
 
 				}
+				
+				mostConstrained.numConstraining=numConstraining(mostConstrained,current);
+				var.numConstraining=numConstraining(var,current);
 				if (var.compareTo(mostConstrained)==-1) {
 				mostConstrained=var;
 			//	System.out.println("1st: "+mostConstrained);
@@ -530,6 +532,18 @@ public class Main {
 			}
 		}
 		return mostConstrained;
+	}
+
+	private static int numConstraining(Variable var, State current) {
+		int numConst=0;
+		for (String constraint : var.constraints) {
+			for (Variable other: current.variableList) {
+				if (!other.valueSet && constraint.contains(other.name)) {
+					numConst++;
+				}
+			}
+		}
+		return numConst;
 	}
 	
 	/*
