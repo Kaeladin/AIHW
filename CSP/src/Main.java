@@ -39,7 +39,10 @@ public class Main {
 	}
 
 	private static State recBackTracking(State currState, boolean forwardChecking) {
-		
+		if(!checkConstraints(currState)){
+			System.out.println("failure");
+			return null;
+		}
 		State result;
 		if(currState.numSet==currState.variableList.size()) {
 			return currState;
@@ -63,10 +66,7 @@ public class Main {
 		
 		if(result!=null)
 			return result;
-		if(!checkConstraints(currState)){
-			System.out.println("failure");
-			return null;
-		}
+		
 		//UPDATE LEGAL VALUES 
 		if(forwardChecking) {
 			updateLegal(chosen, value, currState);
@@ -119,20 +119,75 @@ public class Main {
 	}
 	
 	public static boolean checkConstraints(State state){
-		ArrayList<Variable> varList = state.variableList;
-		boolean legal = false;
-		for(int i=0; i<varList.size(); i++){
-			for (int j=0; j<varList.get(i).legalValues.size(); j++){
-				
-				if(varList.get(i).valueSet == true && varList.get(i).legalValues.get(j) == varList.get(i).value)
-					legal = true;
-				else if(varList.get(i).valueSet == false)
-					legal = true;
-				
+		boolean legal=true;
+		String [] cArr;
+		for (Variable var : state.variableList) {
+			if(var.valueSet) {
+				for(String constr : var.constraints) {
+					
+					if (constr.contains(">")) {
+						cArr=constr.split(">");
+						
+						if(cArr[0].contains(var.name)) {
+							for (Variable other: state.variableList) {
+								if(cArr[1].contains(other.name) && other.valueSet) {
+									legal=var.value>other.value;
+								}
+							}
+						}
+						
+						else if(cArr[1].contains(var.name)) {
+							for (Variable other: state.variableList) {
+								if(cArr[0].contains(other.name) && other.valueSet) {
+									legal=var.value<other.value;
+								}
+							}
+						}
+					}
+					
+					if (constr.contains("<")) {
+						cArr=constr.split("<");
+						
+						if(cArr[0].contains(var.name)) {
+							for (Variable other: state.variableList) {
+								if(cArr[1].contains(other.name) && other.valueSet) {
+									legal=var.value<other.value;
+								}
+							}
+						}
+						
+						else if(cArr[1].contains(var.name)) {
+							for (Variable other: state.variableList) {
+								if(cArr[0].contains(other.name) && other.valueSet) {
+									legal=var.value>other.value;
+								}
+							}
+						}
+					}
+					
+					if (constr.contains("=")) {
+						cArr=constr.split("=");
+						
+						if(cArr[0].contains(var.name)) {
+							for (Variable other: state.variableList) {
+								if(cArr[1].contains(other.name) && other.valueSet) {
+									legal=var.value==other.value;
+								}
+							}
+						}
+						
+						else if(cArr[1].contains(var.name)) {
+							for (Variable other: state.variableList) {
+								if(cArr[0].contains(other.name) && other.valueSet) {
+									legal=var.value==other.value;
+								}
+							}
+						}
+					}
+				}	
 			}
-			if(legal == false)
-				return legal;
 		}
+		
 		return legal;
 	}
 
@@ -260,7 +315,7 @@ public class Main {
 		for(int i=0; i<var.legalValues.size(); i++){
 			//System.out.println(var.legalValues.get(i));
 			min = numConstraining(var, var.legalValues.get(i),curr);
-			if(min < val){
+			if(min <= val){
 				index = i;
 				val = min;
 			}
