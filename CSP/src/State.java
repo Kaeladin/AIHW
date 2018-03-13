@@ -19,6 +19,7 @@ public class State {
 		this.variableList=currState.variableList;
 		this.count=currState.count;
 		this.numSet=currState.numSet;
+		this.assignment=currState.assignment;
 	}
 
 
@@ -37,7 +38,10 @@ public class State {
 			if(var.name.equals(updated.name)) {
 				updated.valueSet=false;
 				this.variableList.set(i, updated);
-				this.assignment=this.assignment.substring(0, this.assignment.indexOf(var.name)-2);
+				if(this.numSet!=1)
+					this.assignment=this.assignment.substring(0, this.assignment.indexOf(var.name)-2);
+				else
+					this.assignment="";
 			}
 			
 		}
