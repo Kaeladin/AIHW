@@ -5,8 +5,8 @@ import java.util.*;
 
 import org.omg.CORBA.Current;
 
-
 public class Main {
+	public static int branchnum=0;
 
 	static Stack<State> fringe = new Stack<State>();
 	//static ArrayList<Variable> varList = new ArrayList<Variable>();
@@ -15,8 +15,8 @@ public class Main {
 		
 		boolean forwardChecking=false;
 
-		File varFile = new File("./src/ex2.var1.txt");
-		File conFile = new File("./src/ex2.con.txt");
+		File varFile = new File("./src/ex1.var1.txt");
+		File conFile = new File("./src/ex1.con.txt");
 
 		Scanner varScan = new Scanner(varFile);
 		Scanner conScan = new Scanner(conFile);
@@ -31,15 +31,14 @@ public class Main {
 	}
 	
 	private static State backtrackingSearch(State currState, boolean forwardChecking) {
-		int branchnum=0;
 		State solution;
-		solution=recBackTracking(currState, forwardChecking, branchnum);
+		solution=recBackTracking(currState, forwardChecking);
 		
 		return solution;
 		
 	}
 
-	private static State recBackTracking(State currState, boolean forwardChecking, int branchnum) {
+	private static State recBackTracking(State currState, boolean forwardChecking) {
 		if(!checkConstraints(currState)){
 	
 			//System.out.println("Constraint fail");
@@ -69,7 +68,7 @@ public class Main {
 			State nextState = new State(currState);
 			nextState.set(chosen);
 			nextState.numSet++;
-			result=recBackTracking(nextState, forwardChecking, branchnum);
+			result=recBackTracking(nextState, forwardChecking);
 			if(forwardChecking) {
 				updateLegal(chosen, value, currState);
 			}
