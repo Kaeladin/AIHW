@@ -9,7 +9,7 @@ public class Main {
 	
 	public static int branchnum=0;
 	public static void main(String[] args) throws FileNotFoundException{
-		/*
+		
 		boolean forwardChecking;
 		File varFile = new File(args[0]) ;
 		  File conFile = new File(args[1]);
@@ -17,15 +17,15 @@ public class Main {
 		  	forwardChecking = false;
 		 else
 		  	forwardChecking = true;
-		 */
+		 
 		
-		
+		/*
 		
 		boolean forwardChecking=true;
 
-		File varFile = new File("./src/ex1.var1.txt");
-		File conFile = new File("./src/ex1.con.txt");
-
+		File varFile = new File("./src/ex3.var1.txt");
+		File conFile = new File("./src/ex3.con.txt");
+*/
 		
 		
 		Scanner varScan = new Scanner(varFile);
@@ -34,20 +34,13 @@ public class Main {
 		initConsts(conScan,varList);
 
 		State currState = new State(varList);
-		backtrackingSearch(currState,forwardChecking);
+		recBackTracking(currState,forwardChecking);
 	
 		varScan.close();
 		conScan.close();
 	}
 	
-	private static State backtrackingSearch(State currState, boolean forwardChecking) {
-		State solution;
-		solution=recBackTracking(currState, forwardChecking);
-		
-		return solution;
-		
-	}
-
+	
 	private static State recBackTracking(State currState, boolean forwardChecking) {
 		if(!checkConstraints(currState)){
 				return null;
@@ -60,55 +53,68 @@ public class Main {
 			System.exit(0);
 		}
 		
-		
+		if(forwardChecking) {
+			currState=updateLegal(currState);
+		}
 		Variable chosen = chooseVariable(currState);
 		
-		/*
+		
 		if(chosen == null){
 			System.out.println("No variables");
 			return null;
 		}
-		*/
+		
 		
 	//	System.out.println(currState==nextState);
 		//System.out.println(currState.variableList==nextState.variableList);
 		while(chosen.legalValues.size()>0) {
 			State nextState = new State(currState);
 			//System.out.println(chosen.name+chosen.legalValues);
+		
 			int value = chooseValue(chosen, nextState);
-			System.out.println(chosen.name+ "="+value);
+			//System.out.println(chosen.name+ "="+value);
+			
+			
 			chosen.value = value;
 			chosen.valueSet = true;
-			if(forwardChecking) {
-				currState= updateLegal(currState);
-				for (Variable var: currState.variableList) {
-					if(var.legalValues.size()==0) {
-						System.out.println(var+"none");
-					}
-				}
-			}
-
 			nextState.updateAssgn(chosen);
 			nextState.set(chosen);
 			nextState.numSet++;
 			
+			if (forwardChecking) {
+				nextState=updateLegal(nextState);
+			}
+			
 			result=recBackTracking(nextState, forwardChecking);
+
+			if(forwardChecking) {
+				
+
+				for (Variable var: nextState.variableList) {
+					if(var.legalValues.size()==0) {
+						branchnum++;
+						System.out.print(branchnum+". "+nextState.assignment);
+						System.out.println("  failure");
+						chosen.valueSet=false;
+						nextState.cleanAssgn(chosen);
+						nextState.set(chosen);
+						nextState.numSet--;
+					}
+				}
+			}
+
 		
 			
-		
-			
-			if(result==null) {
-			//	System.out.println(chosen.name+"="+value+" is not legal assignment.");
+			if(result==null && !forwardChecking) {
+				//System.out.println(chosen.name+"="+value+" is not legal assignment.");
 				branchnum++;
 				System.out.print(branchnum+". "+nextState.assignment);
-				if(!forwardChecking) {
+				if(chosen.legalValues.contains(value)) {
 					chosen.legalValues.remove(chosen.legalValues.indexOf(value));
 				}
 				chosen.valueSet=false;
-			//	System.out.println("1"+nextState.variableList.get(nextState.variableList.indexOf(chosen)));
 				nextState.cleanAssgn(chosen);
 				nextState.set(chosen);
-				//System.out.println("2"+nextState.variableList.get(nextState.variableList.indexOf(chosen)));
 				nextState.numSet--;
 				System.out.println("  failure");
 
@@ -116,9 +122,7 @@ public class Main {
 			else if (chosen.legalValues.contains(value)){
 				chosen.legalValues.remove(chosen.legalValues.indexOf(value));
 				
-			}
-			
-			
+			}	
 		}
 		
 	//	System.out.println("curr"+currState);
