@@ -16,7 +16,11 @@ public class State {
 
 	
 	public State(State currState) {
-		this.variableList=currState.variableList;
+		this.variableList=new ArrayList<Variable>();
+		for(int i=0; i<currState.variableList.size(); i++) {
+			Variable entry = new Variable(currState.variableList.get(i));
+			this.variableList.add(entry);
+		}
 		this.count=currState.count;
 		this.numSet=currState.numSet;
 		this.assignment=currState.assignment;
@@ -38,10 +42,10 @@ public class State {
 			if(var.name.equals(updated.name)) {
 				updated.valueSet=false;
 				this.variableList.set(i, updated);
-				if(this.numSet!=1)
-					this.assignment=this.assignment.substring(0, this.assignment.indexOf(var.name)-2);
-				else
-					this.assignment="";
+				//if(this.numSet!=1)
+				//	this.assignment=this.assignment.substring(0, this.assignment.indexOf(var.name)-2);
+				//else
+					//this.assignment="";
 			}
 			
 		}
@@ -56,6 +60,7 @@ public class State {
 					this.assignment=this.assignment+", ";
 				}
 				this.assignment=this.assignment+updated.name+"="+updated.value;
+				
 				this.variableList.set(i, updated);
 		
 			}

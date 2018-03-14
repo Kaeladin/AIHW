@@ -49,56 +49,64 @@ public class Main {
 			branchnum++;
 			System.out.print(branchnum+". "+currState.assignment);
 			System.out.println("  solution");
-			return currState;
+			System.exit(0);
 		}
 		
 		Variable chosen = chooseVariable(currState);
 		
+		/*
 		if(chosen == null){
 			System.out.println("No variables");
 			return null;
 		}
-
+		*/
+		
+	//	System.out.println(currState==nextState);
+		//System.out.println(currState.variableList==nextState.variableList);
 		while(chosen.legalValues.size()>0) {
+			State nextState = new State(currState);
+			//System.out.println(chosen.name+chosen.legalValues);
 
-			int value = chooseValue(chosen, currState);
+			int value = chooseValue(chosen, nextState);
 			//System.out.println(chosen.name+ "="+value);
 			chosen.value = value;
 			chosen.valueSet = true;
-			//State nextState = new State(currState);
-			currState.set(chosen);
-			currState.numSet++;
-			result=recBackTracking(currState, forwardChecking);
+			nextState.set(chosen);
+			nextState.numSet++;
+			result=recBackTracking(nextState, forwardChecking);
+			/*for(int i=0; i<currState.variableList.size(); i++) {
+				if(!currState.variableList.get(i).valueSet)
+					currState.variableList.get(i).legalValues=currState.variableList.get(i).possibleValues;
+			}*/
 			if(forwardChecking) {
-				updateLegal(chosen, value, currState);
+				currState = updateLegal(currState);
+				
 			}
 			
 			if(result==null) {
 				//System.out.println(chosen.name+"="+value+" is not legal assignment.");
 				branchnum++;
-				System.out.print(branchnum+". "+currState.assignment);
+				System.out.print(branchnum+". "+nextState.assignment);
 	
 				chosen.legalValues.remove(chosen.legalValues.indexOf(value));
 				chosen.valueSet=false;
-				currState.unSet(chosen);
-				currState.numSet--;
+				nextState.unSet(chosen);
+				nextState.numSet--;
 				System.out.println("  failure");
 
 			}
 			else {
-				return result;
+				chosen.legalValues.remove(chosen.legalValues.indexOf(value));
 				
 			}
 		}
-		//UPDATE LEGAL VALUES 
 		
-		//State nextState = new State(currState);
-	//	nextState.count = currState.count + 1;
+	//	System.out.println("curr"+currState);
+		//System.out.println("next"+nextState);
+		//chosen.legalValues=chosen.possibleValues;
+		//currState.unSet(chosen);
 
-		
-		
-		
-		return null;
+		return currState;
 	}
 
 	private static void initConsts(Scanner conScan, ArrayList<Variable> varList ) {
@@ -107,9 +115,7 @@ public class Main {
 			String[] parts = constraint.split(" ");
 
 			for(int i=0; i<varList.size(); i++){
-				//System.out.println(varList.get(i).name);
 				if (parts[0].contains(varList.get(i).name) || parts[2].contains(varList.get(i).name)){
-					//System.out.println("hi");
 					varList.get(i).constraints.add(constraint);
 				}
 
@@ -124,7 +130,6 @@ public class Main {
 			String varName = varScan.next();
 			varName = varName.substring(0, varName.length() - 1);
 			String line = varScan.nextLine();
-			//System.out.println(line);
 			char[] input = line.toCharArray();
 			Variable tempVar = new Variable();
 			tempVar.name = varName;
@@ -247,117 +252,148 @@ public class Main {
 		return legal;
 	}
 
- 	public static void updateLegal(Variable var, int val, State state){
+ 	public static State updateLegal(State state){
  		
- 		ArrayList<Variable> varList=state.variableList;
-		String constraint;
-		String [] constrArr;
+ 		boolean legal=true;
+		String [] cArr;
+		for (Variable var : state.variableList) {
+			if(var.valueSet) {
+				for(String constr : var.constraints) {
+					
+					if (constr.contains(">")) {
+						cArr=constr.split(">");
+						
+						if(cArr[0].contains(var.name)) {
+							for (Variable other: state.variableList) {
+								if(cArr[1].contains(other.name) && other.valueSet) {
+									legal=var.value>other.value;
+									if(!legal) {
+										System.out.println(var);
+										var.legalValues.remove(var.legalValues.indexOf(var.value));
+										//state.unSet(var);
+										return state;
+									}
+								}
+							}
+						}
+						
+						else if(cArr[1].contains(var.name)) {
+							for (Variable other: state.variableList) {
+								if(cArr[0].contains(other.name) && other.valueSet) {
+									legal=var.value<other.value;
+									if(!legal) {
+										var.legalValues.remove(var.legalValues.indexOf(var.value));
+										//state.unSet(var);
+										return state;	
+									}
 
-		for(int k=0; k<var.constraints.size(); k++){
-			constraint = var.constraints.get(k);
-
-			if(constraint.contains(">")){
-				constrArr = constraint.split(">");
-
-				if(constrArr[0].contains(var.name)){
-					for(int i=0; i<varList.size();i++){
-						if(constrArr[1].contains(varList.get(i).name)){
-							for(int j =0 ; j<varList.get(i).legalValues.size(); j++){
-								if(j> val)
-									varList.get(i).legalValues.remove(j);
+								}
 							}
 						}
 					}
-				}
-				else if(constrArr[1].contains(var.name)){
-					for(int i=0; i<varList.size();i++){
-						if(constrArr[0].contains(varList.get(i).name)){
-							for(int j =0 ; j<varList.get(i).legalValues.size(); j++){
-								if(j< val)
-									varList.get(i).legalValues.remove(j);
+					
+					if (constr.contains("<")) {
+						cArr=constr.split("<");
+						
+						if(cArr[0].contains(var.name)) {
+							for (Variable other: state.variableList) {
+								if(cArr[1].contains(other.name) && other.valueSet) {
+									legal=var.value<other.value;
+									if(!legal) {var.legalValues.remove(var.legalValues.indexOf(var.value));
+									//state.unSet(var);
+									return state;
+									}
+
+								}
+							}
+						}
+						
+						else if(cArr[1].contains(var.name)) {
+							for (Variable other: state.variableList) {
+								if(cArr[0].contains(other.name) && other.valueSet) {
+									legal=var.value>other.value;
+									if(!legal) {var.legalValues.remove(var.legalValues.indexOf(var.value));
+									//state.unSet(var);
+									return state;
+									}
+
+								}
 							}
 						}
 					}
+					
+					if (constr.contains("=")) {
+						cArr=constr.split("=");
+						
+						if(cArr[0].contains(var.name)) {
+							for (Variable other: state.variableList) {
+								if(cArr[1].contains(other.name) && other.valueSet) {
+									legal=var.value==other.value;
+									if(!legal) {
+										var.legalValues.remove(var.legalValues.indexOf(var.value));
+										//state.unSet(var);
+										return state;
+	
+									}
 
-				}
+								}
+							}
+						}
+						
+						else if(cArr[1].contains(var.name)) {
+							for (Variable other: state.variableList) {
+								if(cArr[0].contains(other.name) && other.valueSet) {
+									legal=var.value==other.value;
+									if(!legal) {
+										var.legalValues.remove(var.legalValues.indexOf(var.value));
+										//state.unSet(var);
+										return state;
+	
+									}
 
-			}
-			else if(constraint.contains("<")){
-				constrArr = constraint.split("<");
-				if(constrArr[0].contains(var.name)){
-					for(int i=0; i<varList.size();i++){
-						if(constrArr[1].contains(varList.get(i).name)){
-							for(int j =0 ; j<varList.get(i).legalValues.size(); j++){
-								if(j< val)
-									varList.get(i).legalValues.remove(j);
+								}
 							}
 						}
 					}
-				}
-				else if(constrArr[1].contains(var.name)){
-					for(int i=0; i<varList.size();i++){
-						if(constrArr[0].contains(varList.get(i).name)){
-							for(int j =0 ; j<varList.get(i).legalValues.size(); j++){
-								if(j> val)
-									varList.get(i).legalValues.remove(j);
+					
+					if (constr.contains("!")) {
+						cArr=constr.split("!");
+						
+						if(cArr[0].contains(var.name)) {
+							for (Variable other: state.variableList) {
+								if(cArr[1].contains(other.name) && other.valueSet) {
+									legal=var.value!=other.value;
+									if(!legal) {
+										var.legalValues.remove(var.legalValues.indexOf(var.value));
+										//state.unSet(var);
+										return state;
+
+									}
+
+								}
+							}
+						}
+						
+						else if(cArr[1].contains(var.name)) {
+							for (Variable other: state.variableList) {
+								if(cArr[0].contains(other.name) && other.valueSet) {
+									legal=var.value!=other.value;
+									if(!legal) {
+										var.legalValues.remove(var.legalValues.indexOf(var.value));
+										//state.unSet(var);
+										return state;
+										}
+
+								}
 							}
 						}
 					}
-
-				}
-			}
-			else if(constraint.contains("!")){
-				constrArr = constraint.split("!");
-				if(constrArr[0].contains(var.name)){
-					for(int i=0; i<varList.size();i++){
-						if(constrArr[1].contains(varList.get(i).name)){
-							for(int j =0 ; j<varList.get(i).legalValues.size(); j++){
-								if(j== val)
-									varList.get(i).legalValues.remove(j);
-							}
-						}
-					}
-				}
-				else if(constrArr[1].contains(var.name)){
-					for(int i=0; i<varList.size();i++){
-						if(constrArr[0].contains(varList.get(i).name)){
-							for(int j =0 ; j<varList.get(i).legalValues.size(); j++){
-								if(j== val)
-									varList.get(i).legalValues.remove(j);
-							}
-						}
-					}
-
-				}
-
-			}
-			else if(constraint.contains("=")){
-				constrArr = constraint.split("=");
-				if(constrArr[0].contains(var.name)){
-					for(int i=0; i<varList.size();i++){
-						if(constrArr[1].contains(varList.get(i).name)){
-							for(int j =0 ; j<varList.get(i).legalValues.size(); j++){
-								if(j != val)
-									varList.get(i).legalValues.remove(j);
-							}
-						}
-					}
-				}
-				else if(constrArr[1].contains(var.name)){
-					for(int i=0; i<varList.size();i++){
-						if(constrArr[0].contains(varList.get(i).name)){
-							for(int j =0 ; j<varList.get(i).legalValues.size(); j++){
-								if(j!= val)
-									varList.get(i).legalValues.remove(j);
-							}
-						}
-					}
-
-				}
-
+				}	
 			}
 		}
-
+		
+		return state;
+ 		
 
 
 	}
@@ -368,8 +404,8 @@ public class Main {
 		int min;
 
 
-		for(int i=0; i<var.possibleValues.size(); i++){
-			min = numConstraining(var, var.possibleValues.get(i),curr);
+		for(int i=0; i<var.legalValues.size(); i++){
+			min = numConstraining(var, var.legalValues.get(i),curr);
 			if(min < val){
 				index = i;
 				val = min;
@@ -498,12 +534,6 @@ public class Main {
 		//System.out.println(val+": "+illegalCt);
 		return illegalCt;
 	}
-
-	public static int howConstrained(Variable var) {
-		return var.constraints.size();
-		 
-	}
-	
 	
 	public static Variable chooseVariable(State current) {
 		if(current.numSet==current.variableList.size()) {
@@ -545,38 +575,7 @@ public class Main {
 		}
 		return numConst;
 	}
-	
-	/*
-	public static Variable chooseVariable2(State current){
-		
-		//State current = fringe.peek();
-		//check all variables to see which has fewest legal values
-		int mostConstrained = -1;
-		for(int i=0; i< current.variableList.size(); i++){
-			
-			if(current.variableList.get(i).valueSet == true){
-				if(mostConstrained == -1 && i == current.variableList.size()-1)
-					return null;
-			}
 
-			else if(mostConstrained == -1 || current.variableList.get(i).legalValues.size() < current.variableList.get(mostConstrained).legalValues.size()){
-				mostConstrained = i;
-				System.out.println("1st: "+current.variableList.get(mostConstrained));
-
-			}
-			if(current.variableList.get(i).valueSet != true && current.variableList.get(i).legalValues.size() == current.variableList.get(mostConstrained).legalValues.size()){
-				//System.out.println(current.variableList.get(i).name);
-				if(current.variableList.get(mostConstrained).valueSet == true || current.variableList.get(i).name.compareTo(current.variableList.get(mostConstrained).name) < 0 ){
-					mostConstrained = i;
-					System.out.println("2nd: "+mostConstrained+current.variableList.get(mostConstrained).legalValues.size());
-
-
-			}
-			
-		}
-		return current.variableList.get(mostConstrained);
-	}
-	*/
 	
 
 }

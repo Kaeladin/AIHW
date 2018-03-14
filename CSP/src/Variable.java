@@ -10,6 +10,21 @@ public class Variable implements Comparable <Variable>{
 	int value;
 	boolean valueSet;
 
+	public Variable(Variable var) {
+		this.name=var.name;
+		this.constraints=var.constraints;
+		this.possibleValues=var.possibleValues;
+		for (int i=0; i<var.legalValues.size(); i++) {
+			this.legalValues.add(var.legalValues.get(i));
+		}
+		this.numConstraining=var.numConstraining;
+		this.value=var.value;
+		this.valueSet=var.valueSet;
+	}
+
+	public Variable() {
+	}
+
 	@Override
 	public String toString(){
 		String descript = "";
