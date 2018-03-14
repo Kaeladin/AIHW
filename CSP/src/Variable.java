@@ -32,16 +32,16 @@ public class Variable implements Comparable <Variable>{
 		for(int i =0; i< possibleValues.size(); i++){
 			descript += " "+ possibleValues.get(i);
 		}
-		return descript;
+		return descript+valueSet;
 	}
 	
 	@Override
 	public int compareTo(Variable var) {
-		if(this.possibleValues.size()<var.possibleValues.size()) {
+		if(this.legalValues.size()<var.legalValues.size()) {
 			return -1;
 		}
 		
-		else if(this.possibleValues.size()>var.possibleValues.size()) {
+		else if(this.legalValues.size()>var.legalValues.size()) {
 
 			return 1;
 

@@ -36,23 +36,22 @@ public class State {
 		
 	}
 	
-	public void unSet(Variable updated) {
+
+	
+	public void cleanAssgn(Variable updated) {
 		for(int i=0; i<this.variableList.size(); i++) {
 			Variable var=this.variableList.get(i);
 			if(var.name.equals(updated.name)) {
-				updated.valueSet=false;
-				this.variableList.set(i, updated);
-				//if(this.numSet!=1)
-				//	this.assignment=this.assignment.substring(0, this.assignment.indexOf(var.name)-2);
-				//else
-					//this.assignment="";
+				if(this.numSet!=1)
+					this.assignment=this.assignment.substring(0, this.assignment.indexOf(var.name)-2);
+				else
+					this.assignment="";
 			}
 			
 		}
 	}
 	
-	public void set(Variable updated) {
-
+	public void updateAssgn(Variable updated) {
 		for(int i=0; i<this.variableList.size(); i++) {
 			Variable var=this.variableList.get(i);
 			if(var.name.equals(updated.name)) {
@@ -60,6 +59,19 @@ public class State {
 					this.assignment=this.assignment+", ";
 				}
 				this.assignment=this.assignment+updated.name+"="+updated.value;
+				
+				this.variableList.set(i, updated);
+		
+			}
+			
+		}
+	}
+	
+	
+	public void set(Variable updated) {
+		for(int i=0; i<this.variableList.size(); i++) {
+			Variable var=this.variableList.get(i);
+			if(var.name.equals(updated.name)) {
 				
 				this.variableList.set(i, updated);
 		

@@ -71,26 +71,37 @@ public class Main {
 			//System.out.println(chosen.name+ "="+value);
 			chosen.value = value;
 			chosen.valueSet = true;
+			nextState.updateAssgn(chosen);
 			nextState.set(chosen);
 			nextState.numSet++;
-			result=recBackTracking(nextState, forwardChecking);
-			/*for(int i=0; i<currState.variableList.size(); i++) {
-				if(!currState.variableList.get(i).valueSet)
-					currState.variableList.get(i).legalValues=currState.variableList.get(i).possibleValues;
-			}*/
 			if(forwardChecking) {
-				currState = updateLegal(currState);
-				
+				System.out.println(nextState==updateLegal(nextState));
+				nextState = updateLegal(nextState);
+				for (Variable var: nextState.variableList) {
+					System.out.println(var.name+var.legalValues);
+
+					if (var.legalValues.size()==0) {
+						return null;
+					}
+				}
 			}
+			result=recBackTracking(nextState, forwardChecking);
+		
+			
+		
 			
 			if(result==null) {
-				//System.out.println(chosen.name+"="+value+" is not legal assignment.");
+			//	System.out.println(chosen.name+"="+value+" is not legal assignment.");
 				branchnum++;
 				System.out.print(branchnum+". "+nextState.assignment);
-	
-				chosen.legalValues.remove(chosen.legalValues.indexOf(value));
+				if(!forwardChecking) {
+					chosen.legalValues.remove(chosen.legalValues.indexOf(value));
+				}
 				chosen.valueSet=false;
-				nextState.unSet(chosen);
+			//	System.out.println("1"+nextState.variableList.get(nextState.variableList.indexOf(chosen)));
+				nextState.cleanAssgn(chosen);
+				nextState.set(chosen);
+				//System.out.println("2"+nextState.variableList.get(nextState.variableList.indexOf(chosen)));
 				nextState.numSet--;
 				System.out.println("  failure");
 
@@ -268,10 +279,9 @@ public class Main {
 								if(cArr[1].contains(other.name) && other.valueSet) {
 									legal=var.value>other.value;
 									if(!legal) {
-										System.out.println(var);
 										var.legalValues.remove(var.legalValues.indexOf(var.value));
-										//state.unSet(var);
-										return state;
+										state.set(var);
+										//return state;
 									}
 								}
 							}
@@ -283,8 +293,8 @@ public class Main {
 									legal=var.value<other.value;
 									if(!legal) {
 										var.legalValues.remove(var.legalValues.indexOf(var.value));
-										//state.unSet(var);
-										return state;	
+										state.set(var);
+										//return state;	
 									}
 
 								}
@@ -300,8 +310,8 @@ public class Main {
 								if(cArr[1].contains(other.name) && other.valueSet) {
 									legal=var.value<other.value;
 									if(!legal) {var.legalValues.remove(var.legalValues.indexOf(var.value));
-									//state.unSet(var);
-									return state;
+									state.set(var);
+									//return state;
 									}
 
 								}
@@ -313,8 +323,8 @@ public class Main {
 								if(cArr[0].contains(other.name) && other.valueSet) {
 									legal=var.value>other.value;
 									if(!legal) {var.legalValues.remove(var.legalValues.indexOf(var.value));
-									//state.unSet(var);
-									return state;
+									state.set(var);
+									//return state;
 									}
 
 								}
@@ -331,8 +341,8 @@ public class Main {
 									legal=var.value==other.value;
 									if(!legal) {
 										var.legalValues.remove(var.legalValues.indexOf(var.value));
-										//state.unSet(var);
-										return state;
+										state.set(var);
+										//return state;
 	
 									}
 
@@ -346,8 +356,8 @@ public class Main {
 									legal=var.value==other.value;
 									if(!legal) {
 										var.legalValues.remove(var.legalValues.indexOf(var.value));
-										//state.unSet(var);
-										return state;
+										state.set(var);
+										//return state;
 	
 									}
 
@@ -365,8 +375,8 @@ public class Main {
 									legal=var.value!=other.value;
 									if(!legal) {
 										var.legalValues.remove(var.legalValues.indexOf(var.value));
-										//state.unSet(var);
-										return state;
+										state.set(var);
+										//return state;
 
 									}
 
@@ -380,8 +390,8 @@ public class Main {
 									legal=var.value!=other.value;
 									if(!legal) {
 										var.legalValues.remove(var.legalValues.indexOf(var.value));
-										//state.unSet(var);
-										return state;
+										state.set(var);
+										//return state;
 										}
 
 								}
