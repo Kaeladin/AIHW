@@ -60,7 +60,6 @@ public class Main {
 		
 		
 		if(chosen == null){
-			System.out.println("No variables");
 			return null;
 		}
 		
@@ -573,10 +572,7 @@ public class Main {
 	}
 	
 	public static Variable chooseVariable(State current) {
-		if(current.numSet==current.variableList.size()) {
-			System.out.println("All set.");
-			return null;
-		}
+		
 		Variable mostConstrained=null;
 		
 		for (Variable var: current.variableList) {
