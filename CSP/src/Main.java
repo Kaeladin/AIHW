@@ -6,18 +6,28 @@ import java.util.*;
 import org.omg.CORBA.Current;
 
 public class Main {
+	
 	public static int branchnum=0;
-
-	static Stack<State> fringe = new Stack<State>();
-	//static ArrayList<Variable> varList = new ArrayList<Variable>();
-
 	public static void main(String[] args) throws FileNotFoundException{
+		/*
+		boolean forwardChecking;
+		File varFile = new File(args[0]) ;
+		  File conFile = new File(args[1]);
+		 if(args[2].contains("none"))
+		  	forwardChecking = false;
+		 else
+		  	forwardChecking = true;
+		 */
 		
-		boolean forwardChecking=false;
+		
+		
+		boolean forwardChecking=true;
 
-		File varFile = new File("./src/ex3.var1.txt");
-		File conFile = new File("./src/ex3.con.txt");
+		File varFile = new File("./src/ex1.var1.txt");
+		File conFile = new File("./src/ex1.con.txt");
 
+		
+		
 		Scanner varScan = new Scanner(varFile);
 		Scanner conScan = new Scanner(conFile);
 		ArrayList<Variable> varList = initVars(varScan);
@@ -40,9 +50,7 @@ public class Main {
 
 	private static State recBackTracking(State currState, boolean forwardChecking) {
 		if(!checkConstraints(currState)){
-	
-			//System.out.println("Constraint fail");
-			return null;
+				return null;
 		}
 		State result;
 		if(currState.numSet==currState.variableList.size()) {
@@ -51,6 +59,7 @@ public class Main {
 			System.out.println("  solution");
 			System.exit(0);
 		}
+		
 		
 		Variable chosen = chooseVariable(currState);
 		
@@ -66,25 +75,23 @@ public class Main {
 		while(chosen.legalValues.size()>0) {
 			State nextState = new State(currState);
 			//System.out.println(chosen.name+chosen.legalValues);
-
 			int value = chooseValue(chosen, nextState);
-			//System.out.println(chosen.name+ "="+value);
+			System.out.println(chosen.name+ "="+value);
 			chosen.value = value;
 			chosen.valueSet = true;
-			nextState.updateAssgn(chosen);
-			nextState.set(chosen);
-			nextState.numSet++;
 			if(forwardChecking) {
-				System.out.println(nextState==updateLegal(nextState));
-				nextState = updateLegal(nextState);
-				for (Variable var: nextState.variableList) {
-					System.out.println(var.name+var.legalValues);
-
-					if (var.legalValues.size()==0) {
-						return null;
+				currState= updateLegal(currState);
+				for (Variable var: currState.variableList) {
+					if(var.legalValues.size()==0) {
+						System.out.println(var+"none");
 					}
 				}
 			}
+
+			nextState.updateAssgn(chosen);
+			nextState.set(chosen);
+			nextState.numSet++;
+			
 			result=recBackTracking(nextState, forwardChecking);
 		
 			
@@ -106,10 +113,12 @@ public class Main {
 				System.out.println("  failure");
 
 			}
-			else {
+			else if (chosen.legalValues.contains(value)){
 				chosen.legalValues.remove(chosen.legalValues.indexOf(value));
 				
 			}
+			
+			
 		}
 		
 	//	System.out.println("curr"+currState);
@@ -276,12 +285,14 @@ public class Main {
 						
 						if(cArr[0].contains(var.name)) {
 							for (Variable other: state.variableList) {
-								if(cArr[1].contains(other.name) && other.valueSet) {
-									legal=var.value>other.value;
-									if(!legal) {
-										var.legalValues.remove(var.legalValues.indexOf(var.value));
-										state.set(var);
-										//return state;
+								if(cArr[1].contains(other.name)) {
+									for (int i=0; i<other.legalValues.size(); i++) {
+										legal=var.value>other.legalValues.get(i);
+										if(!legal) {
+											other.legalValues.remove(i);
+											state.set(other);
+											//return state;
+										}
 									}
 								}
 							}
@@ -289,12 +300,14 @@ public class Main {
 						
 						else if(cArr[1].contains(var.name)) {
 							for (Variable other: state.variableList) {
-								if(cArr[0].contains(other.name) && other.valueSet) {
-									legal=var.value<other.value;
-									if(!legal) {
-										var.legalValues.remove(var.legalValues.indexOf(var.value));
-										state.set(var);
-										//return state;	
+								if(cArr[0].contains(other.name)) {
+									for (int i=0; i<other.legalValues.size(); i++) {
+										legal=var.value<other.legalValues.get(i);
+										if(!legal) {
+											other.legalValues.remove(i);
+											state.set(other);
+											//return state;
+										}
 									}
 
 								}
@@ -307,11 +320,14 @@ public class Main {
 						
 						if(cArr[0].contains(var.name)) {
 							for (Variable other: state.variableList) {
-								if(cArr[1].contains(other.name) && other.valueSet) {
-									legal=var.value<other.value;
-									if(!legal) {var.legalValues.remove(var.legalValues.indexOf(var.value));
-									state.set(var);
-									//return state;
+								if(cArr[1].contains(other.name)) {
+									for (int i=0; i<other.legalValues.size(); i++) {
+										legal=var.value<other.legalValues.get(i);
+										if(!legal) {
+											other.legalValues.remove(i);
+											state.set(other);
+											//return state;
+										}
 									}
 
 								}
@@ -320,13 +336,15 @@ public class Main {
 						
 						else if(cArr[1].contains(var.name)) {
 							for (Variable other: state.variableList) {
-								if(cArr[0].contains(other.name) && other.valueSet) {
-									legal=var.value>other.value;
-									if(!legal) {var.legalValues.remove(var.legalValues.indexOf(var.value));
-									state.set(var);
-									//return state;
+								if(cArr[0].contains(other.name)) {
+									for (int i=0; i<other.legalValues.size(); i++) {
+										legal=var.value>other.legalValues.get(i);
+										if(!legal) {
+											other.legalValues.remove(i);
+											state.set(other);
+											//return state;
+										}
 									}
-
 								}
 							}
 						}
@@ -337,13 +355,14 @@ public class Main {
 						
 						if(cArr[0].contains(var.name)) {
 							for (Variable other: state.variableList) {
-								if(cArr[1].contains(other.name) && other.valueSet) {
-									legal=var.value==other.value;
-									if(!legal) {
-										var.legalValues.remove(var.legalValues.indexOf(var.value));
-										state.set(var);
-										//return state;
-	
+								if(cArr[1].contains(other.name)) {
+									for (int i=0; i<other.legalValues.size(); i++) {
+										legal=var.value==other.legalValues.get(i);
+										if(!legal) {
+											other.legalValues.remove(i);
+											state.set(other);
+											//return state;
+										}
 									}
 
 								}
@@ -352,13 +371,14 @@ public class Main {
 						
 						else if(cArr[1].contains(var.name)) {
 							for (Variable other: state.variableList) {
-								if(cArr[0].contains(other.name) && other.valueSet) {
-									legal=var.value==other.value;
-									if(!legal) {
-										var.legalValues.remove(var.legalValues.indexOf(var.value));
-										state.set(var);
-										//return state;
-	
+								if(cArr[0].contains(other.name)) {
+									for (int i=0; i<other.legalValues.size(); i++) {
+										legal=var.value==other.legalValues.get(i);
+										if(!legal) {
+											other.legalValues.remove(i);
+											state.set(other);
+											//return state;
+										}
 									}
 
 								}
@@ -371,13 +391,14 @@ public class Main {
 						
 						if(cArr[0].contains(var.name)) {
 							for (Variable other: state.variableList) {
-								if(cArr[1].contains(other.name) && other.valueSet) {
-									legal=var.value!=other.value;
-									if(!legal) {
-										var.legalValues.remove(var.legalValues.indexOf(var.value));
-										state.set(var);
-										//return state;
-
+								if(cArr[1].contains(other.name)) {
+									for (int i=0; i<other.legalValues.size(); i++) {
+										legal=var.value!=other.legalValues.get(i);
+										if(!legal) {
+											other.legalValues.remove(i);
+											state.set(other);
+											//return state;
+										}
 									}
 
 								}
@@ -386,13 +407,15 @@ public class Main {
 						
 						else if(cArr[1].contains(var.name)) {
 							for (Variable other: state.variableList) {
-								if(cArr[0].contains(other.name) && other.valueSet) {
-									legal=var.value!=other.value;
-									if(!legal) {
-										var.legalValues.remove(var.legalValues.indexOf(var.value));
-										state.set(var);
-										//return state;
+								if(cArr[0].contains(other.name)) {
+									for (int i=0; i<other.legalValues.size(); i++) {
+										legal=var.value!=other.legalValues.get(i);
+										if(!legal) {
+											other.legalValues.remove(i);
+											state.set(other);
+											//return state;
 										}
+									}
 
 								}
 							}
